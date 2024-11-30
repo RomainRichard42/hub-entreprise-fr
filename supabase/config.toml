@@ -1,0 +1,4 @@
+project_id = "geoidjnxvqpdygbfxkoa"
+
+[functions.search-companies]
+verify_jwt = false
