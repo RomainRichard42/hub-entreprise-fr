@@ -43,12 +43,73 @@ export const searchCompanies = async ({ query, postalCode, page = 1, perPage = 1
   return companiesData;
 };
 
+export const getModifiedCompanies = async () => {
+  console.log('Fetching modified companies...');
+  
+  const { data: details, error } = await supabase
+    .from('company_details')
+    .select('*')
+    .not('status', 'is', null);
+
+  if (error) {
+    console.error('Error fetching company details:', error);
+    throw error;
+  }
+
+  console.log('Found details:', details);
+
+  // Process each company with retry logic
+  const companies = await Promise.all(
+    (details || []).map(async (detail) => {
+      console.log('Fetching details for SIREN:', detail.siren);
+      
+      const maxRetries = 3;
+      for (let attempt = 0; attempt < maxRetries; attempt++) {
+        try {
+          // Direct API call instead of Edge Function
+          const response = await fetch(
+            `https://recherche-entreprises.api.gouv.fr/search?q=${detail.siren}`,
+            { headers: { 'Accept': 'application/json' }}
+          );
+
+          if (!response.ok) {
+            throw new Error(`API error: ${response.statusText}`);
+          }
+
+          const data = await response.json();
+          const companyData = data.results.find(c => c.siren === detail.siren);
+          
+          if (!companyData) {
+            throw new Error('Company not found');
+          }
+
+          console.log('Company data received:', companyData);
+          
+          return {
+            ...companyData,
+            details: detail
+          };
+        } catch (error) {
+          if (attempt === maxRetries - 1) {
+            console.error(`Failed to fetch company ${detail.siren} after ${maxRetries} attempts:`, error);
+            return null;
+          }
+          await new Promise(resolve => setTimeout(resolve, Math.pow(2, attempt) * 1000));
+        }
+      }
+      return null;
+    })
+  );
+
+  const validCompanies = companies.filter(Boolean);
+  console.log('Final companies list:', validCompanies);
+  return validCompanies;
+};
+
 export const updateCompanyDetails = async (details: CompanyDetails) => {
   if (!details.siren) {
     throw new Error('SIREN is required');
   }
-
-  console.log('Updating company details:', details);
 
   const { data, error } = await supabase
     .from('company_details')
@@ -58,7 +119,8 @@ export const updateCompanyDetails = async (details: CompanyDetails) => {
         phone: details.phone || null,
         email: details.email || null,
         website: details.website || null,
-        internal_notes: details.internal_notes || null
+        internal_notes: details.internal_notes || null,
+        status: details.status || null
       },
       { 
         onConflict: 'siren',
@@ -73,6 +135,5 @@ export const updateCompanyDetails = async (details: CompanyDetails) => {
     throw error;
   }
 
-  console.log('Update successful:', data);
   return data;
 };

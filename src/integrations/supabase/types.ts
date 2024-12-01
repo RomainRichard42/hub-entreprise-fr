@@ -17,6 +17,7 @@ export type Database = {
           internal_notes: string | null
           phone: string | null
           siren: string
+          status: string | null
           updated_at: string | null
           website: string | null
         }
@@ -27,6 +28,7 @@ export type Database = {
           internal_notes?: string | null
           phone?: string | null
           siren: string
+          status?: string | null
           updated_at?: string | null
           website?: string | null
         }
@@ -37,6 +39,7 @@ export type Database = {
           internal_notes?: string | null
           phone?: string | null
           siren?: string
+          status?: string | null
           updated_at?: string | null
           website?: string | null
         }

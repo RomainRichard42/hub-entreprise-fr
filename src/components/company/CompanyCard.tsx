@@ -4,7 +4,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { CompanyCardProps } from "@/types/company";
+import { Label } from "@/components/ui/label";
 
 export const CompanyCard = ({ company, onSave }: CompanyCardProps) => {
   const [isEditing, setIsEditing] = useState(false);
@@ -18,6 +20,7 @@ export const CompanyCard = ({ company, onSave }: CompanyCardProps) => {
       email: formData.get("email") as string || null,
       website: formData.get("website") as string || null,
       internal_notes: formData.get("internal_notes") as string || null,
+      status: formData.get("status") as 'en_cours' | 'a_faire' | 'termine' | null,
     };
     
     try {
@@ -77,6 +80,27 @@ export const CompanyCard = ({ company, onSave }: CompanyCardProps) => {
                 placeholder="Notes internes"
               />
             </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Statut</label>
+              <RadioGroup
+                name="status"
+                defaultValue={company.details?.status || ""}
+                className="flex flex-col space-y-1"
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="en_cours" id="en_cours" />
+                  <Label htmlFor="en_cours">En cours</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="a_faire" id="a_faire" />
+                  <Label htmlFor="a_faire">À faire</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="termine" id="termine" />
+                  <Label htmlFor="termine">Terminé</Label>
+                </div>
+              </RadioGroup>
+            </div>
             <Button type="submit" className="w-full">
               <Save className="h-4 w-4 mr-2" />
               Enregistrer
@@ -104,6 +128,15 @@ export const CompanyCard = ({ company, onSave }: CompanyCardProps) => {
                 )}
                 {company.details.internal_notes && (
                   <p><span className="font-medium">Notes:</span> {company.details.internal_notes}</p>
+                )}
+                {company.details.status && (
+                  <p><span className="font-medium">Statut:</span> {
+                    {
+                      'en_cours': 'En cours',
+                      'a_faire': 'À faire',
+                      'termine': 'Terminé'
+                    }[company.details.status]
+                  }</p>
                 )}
               </>
             )}

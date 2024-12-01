@@ -1,9 +1,10 @@
 export interface CompanyDetails {
   siren: string;
-  phone?: string;
-  email?: string;
-  website?: string;
-  internal_notes?: string;
+  phone?: string | null;
+  email?: string | null;
+  website?: string | null;
+  internal_notes?: string | null;
+  status?: 'en_cours' | 'a_faire' | 'termine' | null;
   updated_at?: string;
 }
 
