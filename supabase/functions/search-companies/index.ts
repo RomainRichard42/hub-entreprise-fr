@@ -16,14 +16,15 @@ serve(async (req) => {
     console.log('Received search params:', searchParams)
 
     const apiUrl = new URL('https://recherche-entreprises.api.gouv.fr/search')
-    apiUrl.search = searchParams
+    const params = new URLSearchParams(searchParams)
+    apiUrl.search = params.toString()
 
     console.log('Fetching from API:', apiUrl.toString())
 
     const response = await fetch(apiUrl.toString())
     const data = await response.json()
 
-    console.log('API response received, results count:', data.results?.length ?? 0)
+    console.log('API response received')
 
     return new Response(
       JSON.stringify(data),
